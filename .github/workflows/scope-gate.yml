@@ -1,0 +1,37 @@
+name: VM2 Newline Scope Gate
+permissions: read-all
+on:
+  pull_request:
+
+jobs:
+  detect-scopes:
+    runs-on: ubuntu-24.04
+    outputs:
+      protected: ${{ fromJSON(steps.scopes.outputs.scopes).protected }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: scopes
+        uses: Mergifyio/gha-mergify-ci@v25
+        with:
+          action: scopes
+
+  protected-tests:
+    needs: detect-scopes
+    if: ${{ needs.detect-scopes.outputs.protected == 'true' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - run: |
+          echo "VM2_NEWLINE_PROTECTED_TEST_N7P4_RAN=true"
+          exit 1
+
+  ci-gate:
+    if: ${{ !cancelled() }}
+    needs:
+      - detect-scopes
+      - protected-tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: Mergifyio/gha-mergify-ci@v25
+        with:
+          action: wait-jobs
+          jobs: ${{ toJSON(needs) }}
