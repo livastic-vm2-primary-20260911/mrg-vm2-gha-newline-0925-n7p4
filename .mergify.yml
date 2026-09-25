@@ -1,0 +1,9 @@
+scopes:
+  source:
+    files:
+      protected:
+        include:
+          - protected/**
+      docs:
+        include:
+          - docs/**
